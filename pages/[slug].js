@@ -1,19 +1,29 @@
 import renderToString from 'next-mdx-remote/render-to-string'
 import hydrate from 'next-mdx-remote/hydrate'
-// import fs from 'fs'
 import matter from 'gray-matter'
-import path from 'path'
+import Image from 'next/image'
 import { getAllPostSlugs, getPostdata } from '../lib/posts'
 
-const components = {}
+const components = (slug) => ({
+  h1: ({ children }) => <h1>{children}</h1>,
+  img: ({ src, alt }) => {
+    return (
+      <p>
+        <Image
+          alt={alt}
+          src={require('../content/' + slug + '/' + src).default}
+          width={450}
+          height={450}
+        />
+      </p>
+    )
+  }
+})
 
-const Post = ({ source, frontMatter }) => {
-  /*return (
-    <p>
-      {source} {JSON.stringify(frontMatter)}
-    </p>
-  )*/
-  const content = hydrate(source, { components })
+const Post = ({ source, frontMatter, slug }) => {
+  const content = hydrate(source, {
+    components: components(slug)
+  })
   return (
     <>
       <h1>Post</h1>
@@ -21,28 +31,6 @@ const Post = ({ source, frontMatter }) => {
     </>
   )
 }
-/*
-export async function getStaticPaths() {
-  return {
-    paths: [
-      {
-        params: {
-          slug: 'test'
-        }
-      }
-    ],
-    fallback: true
-  }
-}
-
-export async function getStaticProps() {
-  // MDX text - can be from a local file, database, anywhere
-  // const source = 'Some **mdx** text, with a component'
-  const PATH = path.join(process.cwd(), 'content')
-  const source = fs.readFileSync(PATH + '/blog-post-1/index.md')
-  const mdxSource = await renderToString(source, { components })
-  return { props: { source: mdxSource } }
-}*/
 
 export async function getStaticPaths() {
   const paths = getAllPostSlugs()
@@ -51,15 +39,17 @@ export async function getStaticPaths() {
     fallback: false
   }
 }
+
 export async function getStaticProps({ params }) {
   const postContent = await getPostdata(params.slug)
   const { data, content } = matter(postContent)
   const mdxSource = await renderToString(content, {
-    components,
+    components: components(params.slug),
     scope: data
   })
   return {
     props: {
+      slug: params.slug,
       source: mdxSource,
       frontMatter: data
     }

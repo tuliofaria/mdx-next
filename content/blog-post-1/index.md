@@ -8,3 +8,5 @@ excerpt: "World is random in what it does, so let's write something random"
 # Testing
 
 Test. Some **mdx** text, with a component.
+
+![Image of Yaktocat](pic.jpg)
