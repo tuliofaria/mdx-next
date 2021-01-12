@@ -14,6 +14,7 @@ const components = (slug) => ({
           src={require('../content/' + slug + '/' + src).default}
           width={450}
           height={450}
+          layout='responsive'
         />
       </p>
     )
